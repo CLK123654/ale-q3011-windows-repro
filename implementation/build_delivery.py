@@ -59,6 +59,9 @@ def main() -> None:
     if dag is None:
         raise RuntimeError("候选DAG未导入")
     serialized = SerializedDAG.to_dict(dag)
+    pycache = tmp / "dags" / "__pycache__"
+    if pycache.exists():
+        shutil.rmtree(pycache)
 
     write_csv(
         tmp / "reports" / "replay_plan.csv",
