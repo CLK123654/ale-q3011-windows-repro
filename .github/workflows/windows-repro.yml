@@ -57,7 +57,7 @@ jobs:
           $drive = $repoWindows.Substring(0, 1).ToLowerInvariant()
           $rest = $repoWindows.Substring(2).Replace('\', '/')
           $repoWsl = "/mnt/$drive$rest"
-          wsl.exe -d Ubuntu-24.04 -- bash -lc "set -e; sudo apt-get update; sudo apt-get install -y curl; curl -LsSf https://astral.sh/uv/install.sh | sh; cd '$repoWsl'; curl -LsSf 'https://raw.githubusercontent.com/apache-airflow/constraints-2.10.5/constraints-3.11.txt' -o airflow-constraints.txt; `$HOME/.local/bin/uv python install 3.11; `$HOME/.local/bin/uv venv --python 3.11 .venv; `$HOME/.local/bin/uv pip install --python .venv/bin/python 'apache-airflow==2.10.5' --constraint airflow-constraints.txt"
+          wsl.exe -d Ubuntu-24.04 -- bash -lc "set -e; sudo apt-get update; sudo apt-get install -y curl; curl -LsSf https://astral.sh/uv/install.sh | sh; cd '$repoWsl'; `$HOME/.local/bin/uv python install 3.11; `$HOME/.local/bin/uv venv --python 3.11 .venv; `$HOME/.local/bin/uv pip install --python .venv/bin/python 'apache-airflow==2.10.5'"
       - name: Generate Reference candidate
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'reference' }}
         shell: pwsh
