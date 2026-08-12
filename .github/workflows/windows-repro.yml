@@ -79,7 +79,7 @@ jobs:
           $drive = $repoWindows.Substring(0, 1).ToLowerInvariant()
           $rest = $repoWindows.Substring(2).Replace('\', '/')
           $repoWsl = "/mnt/$drive$rest"
-          wsl.exe -d Ubuntu-24.04 -- bash "$repoWsl/qa/block_network.sh" "$repoWsl"
+          wsl.exe -d Ubuntu-24.04 -- bash -lc "sed -i 's/`r`$//' '$repoWsl/qa/block_network.sh'; bash '$repoWsl/qa/block_network.sh' '$repoWsl'"
       - name: Verify final task in WSL2
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'verify') }}
         shell: pwsh

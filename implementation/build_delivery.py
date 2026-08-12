@@ -28,6 +28,8 @@ def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
 
 
 def main() -> None:
+    if OUTPUT.exists():
+        shutil.rmtree(OUTPUT)
     required = {
         "README.md",
         "orchestration_contract.yaml",
