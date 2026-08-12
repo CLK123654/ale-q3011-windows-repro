@@ -1,0 +1,13 @@
+操作系统： Windows11加WSL2。
+
+主软件： ApacheAirflow2.10.5，在WSL2的Ubuntu24.04中运行。
+
+代码执行依赖： Python3.12和PyYAML6.0.2，用于读取CSV、JSONL、JSON和YAML材料并整理发布文件。
+
+CPU/GPU： 普通多核CPU即可完成DAG导入、序列化和材料整理；GPU队列仅是Airflow资源池名称，不要求本机配备GPU。
+
+磁盘： 工作目录需要容纳Airflow虚拟环境、临时AIRFLOW_HOME、输入材料和交付文件。
+
+超时： DAG导入与结构读取应在发布请求给出的维护窗内完成，异常导入要在切换前返回平台组处理。
+
+主要风险： 当前DAG的串行日程若未被Dataset替换，回放仍会按旧路径进入队列。资源池名称、映射载荷或清理依赖写错，也会让值班人拿到与编排合同不一致的候选DAG。

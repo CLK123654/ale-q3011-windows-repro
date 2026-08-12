@@ -1,0 +1,8 @@
+1. 在ApacheAirflow环境中导入当前DAG，查看现有日程、任务关系和运行边界。
+2. 读取orchestration_contract.yaml，将DAG名称、Dataset、Airflowpool和活跃运行限制写入候选DAG。
+3. 读取回放窗口与策略分片，生成窗口和分片的映射载荷。
+4. 建立CPU队列与GPU复核队列的映射任务，并把任务绑定到合同指定的Airflowpool。
+5. 用XComArg汇合两个映射分支，设置指标Dataset与回放完成Dataset的发布顺序。
+6. 将工作区任务标记为setup与teardown，确认清理位于发布任务之后。
+7. 通过DagBag读取候选DAG，并用SerializedDAG提取任务、依赖、资源池和Dataset关系。
+8. 根据DAG结构、业务材料和发布请求整理回放计划、血缘、资源池分配与发布摘要。

@@ -1,0 +1,97 @@
+总分100分。
+
+1. 交付物可以完整读取
+分值： 10分
+优先级： Gate项
+所属层级： L1任务指令遵循层
+标准答案： output中含候选DAG、回放计划、资源池分配、Dataset血缘、DAG结构、发布摘要和目录说明，文件可读取。
+关键字段： 固定交付路径、UTF-8编码、CSV表头、JSON字段。
+容差： CSV行序可以变化，JSON键顺序和说明文字可以变化。
+失败边界： 任一交付物缺失、无法解析或内容为空，本项失败。
+可观察证据： output目录中的实际文件、CSV表头和JSON对象。
+客观硬性标准： 每个文件承担题面要求的业务用途，目录说明与实际成员一致。
+阈值： 全部规定交付物通过才得分。
+
+2. 输入材料被正确使用
+分值： 10分
+优先级： Gate项
+所属层级： L3输入数据导入与完整性层
+标准答案： 当前DAG、编排合同、回放窗口、策略分片和发布请求均进入候选DAG或相应发布材料。
+关键字段： dag_id、DatasetURI、window_id、logical_date、shard_id、queue、pool、发布窗口。
+容差： 文件读取顺序可以变化。
+失败边界： 主要输入未消费，或输出出现输入中不存在的窗口、分片、资源池与发布范围，本项失败。
+可观察证据： 候选DAG、replay_plan.csv、pool_assignment.csv、release-summary.json。
+客观硬性标准： 输出业务键能逐项回连输入，派生字段可以从输入复算。
+阈值： 所有输入文件均有明确消费者。
+
+3. Dataset调度合同成立
+分值： 16分
+优先级： 高权重项
+所属层级： L7产物结构/Schema/专业对象层
+标准答案： content_moderation_replay由合同指定的输入Dataset触发，catchup为false，max_active_runs与合同一致，起始时间固定且带时区。
+关键字段： dag_id、schedule、start_date、catchup、max_active_runs。
+容差： 等价的固定UTC起始日期可以接受。
+失败边界： 使用cron或按日字符串作为schedule，使用当前墙上时间，或活跃运行限制与合同不一致，本项失败。
+可观察证据： DagBag中的DAG对象和dag_structure.json。
+客观硬性标准： 调度字段来自Airflow实际导入的候选DAG。
+阈值： 五个关键字段全部符合合同。
+
+4. 窗口与策略分片映射正确
+分值： 16分
+优先级： 高权重项
+所属层级： L5多源关联与字段一致性层
+标准答案： 每个回放窗口与每个策略分片形成唯一载荷，planned_events由base_events和multiplier计算，业务键无重复。
+关键字段： map_index、window_id、logical_date、shard_id、queue、pool、planned_events、dataset_uri。
+容差： map_index具体数值可以随稳定排序方案变化，业务组合与计算结果不能变化。
+失败边界： 组合缺失、重复、资源池错配或planned_events计算错误，本项失败。
+可观察证据： replay_plan.csv和policy_shards.jsonl、replay_windows.csv的交叉复算结果。
+客观硬性标准： 组合覆盖输入的完整笛卡尔积，事件数按四舍五入后的整数记录。
+阈值： 全部组合和数值一致。
+
+5. 资源池与动态映射结构正确
+分值： 15分
+优先级： 高权重项
+所属层级： L2软件/工具操作层
+标准答案： CPU队列进入content_cpu，GPU复核队列进入gpu_review，两类任务均使用Airflow动态映射。
+关键字段： task_id、pool、queue、shard_id、mapped_task_ids。
+容差： 任务函数名称可以变化，资源池名称和队列归属不能变化。
+失败边界： 静态复制任务替代动态映射、队列进入错误资源池或映射任务无法由DagBag读取，本项失败。
+可观察证据： DagBag任务对象、dag_structure.json和pool_assignment.csv。
+客观硬性标准： 资源池属性来自Airflow任务对象，分配表与输入分片一致。
+阈值： 两个映射分支和全部分片分配均正确。
+
+6. 生命周期与Dataset血缘闭合
+分值： 15分
+优先级： 高权重项
+所属层级： L9跨产物一致性与可追溯层
+标准答案： 工作区创建是setup，清理是teardown；两个映射分支汇入指标收集，指标Dataset发布后再发布回放完成Dataset，清理位于发布之后。
+关键字段： is_setup、is_teardown、upstream_task_ids、downstream_task_ids、inlet_uri、outlet_uri。
+容差： 辅助任务名称可以变化，依赖方向和DatasetURI不能变化。
+失败边界： 清理提前、任一映射分支未进入汇总、Dataset发布顺序颠倒或血缘表与DAG不一致，本项失败。
+可观察证据： DagBag依赖图、dataset_lineage.csv和dag_structure.json。
+客观硬性标准： setup、teardown、汇总与两个Dataset关系均取自实际候选DAG。
+阈值： 生命周期和血缘链全部成立。
+
+7. DAG可由Airflow读取和序列化
+分值： 12分
+优先级： Gate项
+所属层级： L8运行验证/可执行行为层
+标准答案： ApacheAirflow2.10.5的DagBag可以读取content_moderation_replay，SerializedDAG可以生成结构化结果。
+关键字段： import_errors、dag_id、task_ids、serialized_dag。
+容差： Airflow补丁版本可以变化，DAG结构和业务合同不能变化。
+失败边界： 出现导入错误、目标DAG缺失、任务关系无法读取或序列化失败，本项失败。
+可观察证据： Airflow运行输出和dag_structure.json。
+客观硬性标准： 结构记录由实际DagBag和SerializedDAG产生。
+阈值： 导入错误为零且序列化完成。
+
+8. 发布摘要可供值班人使用
+分值： 6分
+优先级： 普通项
+所属层级： L9跨产物一致性与可追溯层
+标准答案： 发布摘要记录切换窗口、影响服务、上线方式、观察时长、观察项、退回条件、发布负责人和运行负责人。
+关键字段： release_window_start_utc、release_window_end_utc、affected_service、rollout_mode、observation_minutes、observation_metrics、rollback_condition、release_owner、runtime_owner。
+容差： JSON键顺序可以变化。
+失败边界： 任一发布字段缺失、与输入请求或编排合同不一致，本项失败。
+可观察证据： release-summary.json、release_request.json和orchestration_contract.yaml。
+客观硬性标准： 发布摘要不引入输入中没有的窗口、时长、负责人和退回条件。
+阈值： 全部字段逐项一致。
