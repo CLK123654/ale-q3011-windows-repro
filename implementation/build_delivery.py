@@ -55,7 +55,7 @@ def main() -> None:
     bag = DagBag(dag_folder=str(tmp / "dags"), include_examples=False, safe_mode=False)
     if bag.import_errors:
         raise RuntimeError(json.dumps(bag.import_errors, ensure_ascii=False))
-    dag = bag.get_dag(contract["dag_id"])
+    dag = bag.dags.get(contract["dag_id"])
     if dag is None:
         raise RuntimeError("候选DAG未导入")
     serialized = SerializedDAG.to_dict(dag)
